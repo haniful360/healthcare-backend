@@ -3,6 +3,8 @@ model User {
   name               String
   email              String
   password           String
+  googleId          String?    @unique
+  authProvider      AuthProvider @default(CREDENTIALS)
   emailVerified      Boolean    @default(false)
   role               Role       @default(PATIENT)
   status             UserStatus @default(ACTIVE)
