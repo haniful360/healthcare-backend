@@ -287,6 +287,18 @@ const googleLogin = async (payload: IGoogleLoginPayload) => {
       }
     }
 
+    if (!user) {
+      throw new Error("User Not Found");
+    }
+
+    if (user.status === UserStatus.BLOCKED) {
+      throw new Error("User Is Blocked");
+    }
+
+    if (user.isDeleted || user.status === UserStatus.DELETED) {
+      throw new Error("User Is Deleted");
+    }
+
     const jwtPayload = {
       userId: user.id,
       name: user.name,
