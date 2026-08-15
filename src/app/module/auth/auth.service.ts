@@ -12,13 +12,17 @@ import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { jwtUtils } from "../../utils/jwt";
 import {
+  IForgotPasswordPayload,
   IGoogleLoginPayload,
   ILoginUserPayload,
   IRegisterPatientPayload,
   IRequestUser,
+  IResetPasswordPayload,
 } from "./auth.interface";
 import { TokenPayload } from "google-auth-library";
 import { googleClient } from "../../lib/googleAuth";
+import { randomInt } from "crypto";
+import { redisClient } from "../../lib/lib";
 
 const registerPatient = async (payload: IRegisterPatientPayload) => {
   const { name, password } = payload;
@@ -328,10 +332,61 @@ const googleLogin = async (payload: IGoogleLoginPayload) => {
   }
 };
 
+const forgotPassword = async (payload: IForgotPasswordPayload) => {
+
+	const user = await prisma.user.findUnique({
+		where: { email: payload.email },
+	});
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  if (user.status === UserStatus.BLOCKED) {
+    throw new Error("User is blocked");
+  }
+
+  if (user.isDeleted || user.status === UserStatus.DELETED) {
+    throw new Error("User is deleted");
+  }
+  if(!user.googleId && user.authProvider === AuthProvider.GOOGLE) {
+    throw new Error("User registered with Google. Please use Google login.");
+  }
+
+  // otp generate by crypto and send email to user with reset password link containing token and otp
+  const otp = randomInt(100000, 999999).toString();
+  const key = `forgot_password_otp:${user.email}`;
+
+  await redisClient.set(key, otp, {
+    expiration: {
+      type: "EX",
+      value: 5 * 60, // 5 minutes
+    }
+  });
+
+  const jwtPayload = {
+    userId: user.id,
+    email: user.email,
+  };
+
+ 
+
+};
+
+const resetPassword = async (payload: IResetPasswordPayload) => {
+  const verifiedToken = jwtUtils.verifyToken(
+    payload.token,
+    config.jwt_reset_password_secret,
+  );
+
+
+}
+
 export const AuthService = {
   registerPatient,
   loginUser,
   getMe,
   refreshToken,
   googleLogin,
+  forgotPassword,
+  resetPassword,
 };
