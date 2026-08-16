@@ -50,9 +50,15 @@ const ResetPasswordZodSchema = z.object({
 		.regex(/[^A-Za-z0-9]/, "Password must contain atleast 1 Special Character"),
 });
 
+const VerifyEmailZodSchema = z.object({
+	email: z.string().email("Invalid email address"),
+	otp: z.string().min(1, "OTP is required"),
+});
+
 export const UserValidation = {
 	PatientRegistrationZodSchema,
 	LoginZodSchema,
 	ForgotPasswordZodSchema,
 	ResetPasswordZodSchema,
+	VerifyEmailZodSchema,
 };
