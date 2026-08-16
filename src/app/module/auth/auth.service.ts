@@ -2,6 +2,7 @@
 /** biome-ignore-all lint/correctness/noUnusedVariables: <explanation> */
 /** biome-ignore-all lint/style/useConst: <explanation> */
 import bcrypt from "bcryptjs";
+import ejs from "ejs";
 import { JwtPayload, SignOptions } from "jsonwebtoken";
 import {
 	AuthProvider,
@@ -22,9 +23,9 @@ import {
 import { TokenPayload } from "google-auth-library";
 import { googleClient } from "../../lib/googleAuth";
 import { randomInt } from "crypto";
+import path from "path";
 import { redisClient } from "../../lib/lib";
 import { transporter } from "../../lib/nodemailer";
-import { getForgotPasswordEmailTemplate } from "../../utils/emailTemplate";
 
 const registerPatient = async (payload: IRegisterPatientPayload) => {
 	const { name, password } = payload;
@@ -369,12 +370,22 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
 		},
 	});
 
+	const templatePath = path.join(
+		process.cwd(),
+		"src",
+		"app",
+		"templates",
+		"forgot-password.ejs",
+	);
+
+	const html = await ejs.renderFile(templatePath, { otp });
+
 	await transporter.sendMail({
 		from: config.smtp_sender,
 		to: user.email,
 		subject: "Password Reset Verification Code",
 		text: `Your password reset code is: ${otp}. It expires in 5 minutes. If you did not request this, please ignore this email.`,
-		html: getForgotPasswordEmailTemplate(otp),
+		html,
 	});
 };
 
