@@ -32,4 +32,5 @@ export default {
 	smtp_port: Number(process.env.SMTP_PORT!),
 	smtp_user: process.env.SMTP_USER!,
 	smtp_password: process.env.SMTP_PASSWORD!,
+	smtp_sender: process.env.SMTP_SENDER!,
 };

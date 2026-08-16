@@ -23,6 +23,8 @@ import { TokenPayload } from "google-auth-library";
 import { googleClient } from "../../lib/googleAuth";
 import { randomInt } from "crypto";
 import { redisClient } from "../../lib/lib";
+import { transporter } from "../../lib/nodemailer";
+import { getForgotPasswordEmailTemplate } from "../../utils/emailTemplate";
 
 const registerPatient = async (payload: IRegisterPatientPayload) => {
 	const { name, password } = payload;
@@ -365,6 +367,14 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
 			type: "EX",
 			value: 5 * 60, // 5 minutes
 		},
+	});
+
+	await transporter.sendMail({
+		from: config.smtp_sender,
+		to: user.email,
+		subject: "Password Reset Verification Code",
+		text: `Your password reset code is: ${otp}. It expires in 5 minutes. If you did not request this, please ignore this email.`,
+		html: getForgotPasswordEmailTemplate(otp),
 	});
 };
 
