@@ -4,7 +4,7 @@ const PatientRegistrationZodSchema = z.object({
   name: z
     .string("Not A String!!!!!")
     .min(3, "Name must atleast 3 characters long!!!")
-    .max(10),
+    .max(50, "Name must not exceed 50 characters"),
   email: z.email("Not email!!"),
   password: z
     .string()
@@ -33,7 +33,12 @@ const LoginZodSchema = z.object({
     .regex(/[^A-Za-z0-9]/, "Password must contain atleast 1 Special Character"),
 });
 
+const ForgotPasswordZodSchema = z.object({
+  email: z.string().email("Invalid email address"),
+});
+
 export const UserValidation = {
   PatientRegistrationZodSchema,
   LoginZodSchema,
+  ForgotPasswordZodSchema,
 };

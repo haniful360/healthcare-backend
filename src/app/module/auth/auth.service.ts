@@ -333,10 +333,11 @@ const googleLogin = async (payload: IGoogleLoginPayload) => {
 };
 
 const forgotPassword = async (payload: IForgotPasswordPayload) => {
+  const email = payload.email.trim().toLowerCase();
 
-	const user = await prisma.user.findUnique({
-		where: { email: payload.email },
-	});
+  const user = await prisma.user.findUnique({
+    where: { email },
+  });
   if (!user) {
     throw new Error("User not found");
   }
@@ -350,6 +351,9 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
   }
   if(!user.googleId && user.authProvider === AuthProvider.GOOGLE) {
     throw new Error("User registered with Google. Please use Google login.");
+  }
+  if(!user.emailVerified) {
+    throw new Error("Please verify your email first.");
   }
 
   // otp generate by crypto and send email to user with reset password link containing token and otp
@@ -372,12 +376,8 @@ const forgotPassword = async (payload: IForgotPasswordPayload) => {
 
 };
 
-const resetPassword = async (payload: IResetPasswordPayload) => {
-  const verifiedToken = jwtUtils.verifyToken(
-    payload.token,
-    config.jwt_reset_password_secret,
-  );
-
+const resetPassword = async (payload: IResetPasswordPayload, user: IRequestUser) => {
+  
 
 }
 
