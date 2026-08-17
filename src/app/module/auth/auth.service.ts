@@ -28,6 +28,31 @@ import path from "path";
 import { redisClient } from "../../lib/lib";
 import { transporter } from "../../lib/nodemailer";
 
+const sendWelcomeEmail = async (email: string, name: string) => {
+	try {
+		const templatePath = path.join(
+			process.cwd(),
+			"src",
+			"app",
+			"templates",
+			"patient-welcome-email.ejs",
+		);
+
+		const templateData = { name };
+		const html = await ejs.renderFile(templatePath, templateData);
+
+		await transporter.sendMail({
+			from: config.smtp_sender,
+			to: email,
+			subject: "Welcome to PH Healthcare System",
+			text: `Welcome to PH Healthcare System, ${name}! Your account has been created successfully.`,
+			html,
+		});
+	} catch (error) {
+		console.error("Failed to send welcome email:", error);
+	}
+};
+
 const registerPatient = async (payload: IRegisterPatientPayload) => {
 	const { name, password, patient: patientData } = payload;
 	const email = payload.email.trim().toLowerCase();
@@ -179,6 +204,8 @@ const verifyPatientEmail = async (payload: IVerifyEmailPayload) => {
 	);
 
 	await redisClient.del([otpKey, patientRegistrationKey]);
+
+	await sendWelcomeEmail(email, createdUser.name);
 
 	return { user: userData, patient, accessToken, refreshToken };
 };
@@ -389,6 +416,8 @@ const googleLogin = async (payload: IGoogleLoginPayload) => {
 						patient: true,
 					},
 				});
+
+				await sendWelcomeEmail(user.email, user.name);
 			}
 		}
 
