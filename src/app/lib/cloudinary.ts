@@ -6,3 +6,5 @@ cloudinary.config({
     api_key: config.cloudinary_api_key,
     api_secret: config.cloudinary_api_secret
 });
+
+export const cloudinaryUtils = cloudinary
