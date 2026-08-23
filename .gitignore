@@ -1,6 +1,4 @@
 node_modules
-.env
-.env.*
 !.env.example
 dist
 
@@ -11,4 +9,8 @@ pnpm-lock.yaml
 yarn.lock
 package-lock.json
 pnpm-workspace.yaml
-.vscode
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat
+.gitignore
+config.bat
