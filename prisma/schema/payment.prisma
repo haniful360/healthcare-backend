@@ -1,14 +1,28 @@
 model Payment {
-    id        String           @id @default(uuid())
-    status    PaymentStatus   @default(UNPAID)
-    amount    Decimal @db.Decimal(10,2)
-    currency  String @default("BDT")
-    apointmentId String @unique
+    id                    String        @id @default(uuid())
+    status                PaymentStatus @default(UNPAID)
+    amount                Decimal       @db.Decimal(10, 2)
+    currency              String        @default("BDT")
+    paymentGateway        String        @default("bkash")
+    merchantInvoiceNumber String        @unique
 
+    bkashPaymentId  String? @unique
+    bkashTrxId      String?
+    payerRefference String? // user email/ phone number
+    paidAt          String?
+
+    gatewayResponse Json?
+
+    refunndtrxId String?
+    refundAmount Decimal @db.Decimal(10, 2)
+    refuncReason String?
+    refundAt      String?
+
+    apointmentId String @unique
     apointment Apointment @relation(fields: [apointmentId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 
-    createdAt DateTime         @default(now())
-    updatedAt DateTime         @updatedAt
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     @@map("payments")
 }
